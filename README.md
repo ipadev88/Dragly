@@ -12,10 +12,13 @@
 [![SwiftUI](https://img.shields.io/badge/SwiftUI-0B84FF?style=for-the-badge&logo=swift&logoColor=white)](https://developer.apple.com/xcode/swiftui/)
 [![Xcode](https://img.shields.io/badge/Xcode-26-1575F9?style=for-the-badge&logo=xcode&logoColor=white)](https://developer.apple.com/xcode/)
 
-<img src="Design/screenshots/01-measure.png" width="200" alt="Measure">&nbsp;
-<img src="Design/screenshots/02-result.png" width="200" alt="Result">&nbsp;
-<img src="Design/screenshots/03-scrub.png" width="200" alt="Chart scrubbing">&nbsp;
-<img src="Design/screenshots/04-history.png" width="200" alt="History">
+<img src="Design/screenshots/01-measure.png" width="185" alt="Measure">&nbsp;
+<img src="Design/screenshots/02-result.png" width="185" alt="Result">&nbsp;
+<img src="Design/screenshots/03-scrub.png" width="185" alt="Chart scrubbing">
+
+<img src="Design/screenshots/04-route.png" width="185" alt="Route map">&nbsp;
+<img src="Design/screenshots/05-history.png" width="185" alt="History">&nbsp;
+<img src="Design/screenshots/06-settings.png" width="185" alt="Settings">
 
 </div>
 
@@ -43,6 +46,7 @@ A Draggy-style performance meter that runs on one iPhone — no external GNSS re
 | **Background** | Keeps measuring with the screen off or while you're in another app |
 | **History** | Every run stored on device with its chart and full table |
 | **Units** | km/h and mph, meters and feet, °C and °F |
+| **Appearance** | Light, dark or system theme; eight accent colors |
 
 ## How the accuracy works
 
