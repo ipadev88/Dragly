@@ -25,6 +25,7 @@ struct ContentView: View {
             }
         }
         .tint(appearance.accent.color)
+        .preferredColorScheme(appearance.scheme.colorScheme)
         .task {
             app.modelContext = context
             #if DEBUG
@@ -35,6 +36,11 @@ struct ContentView: View {
             // Arms the real sensor pipeline, as if START had been tapped —
             // lets background behaviour be tested with simulated GPS routes.
             if args.contains("--arm") { app.arm() }
+            // Verifies that switching the theme at runtime actually repaints.
+            if args.contains("--flip-scheme") {
+                try? await Task.sleep(for: .seconds(3))
+                appearance.scheme = appearance.scheme == .dark ? .light : .dark
+            }
             if args.contains("--sim-standing") {
                 app.simulateRun(rolling: false)
             } else if args.contains("--sim-rolling") {
