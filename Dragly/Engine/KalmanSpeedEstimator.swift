@@ -82,6 +82,10 @@ final class KalmanSpeedEstimator {
     private(set) var lastTime: TimeInterval?
     private(set) var lastAccel: Double = 0
     private(set) var isInitialized = false
+    /// v_gps − v_estimate at the last fix. Strongly negative means the
+    /// estimate has run away above GPS — the caller uses this to detect
+    /// integration driven by something other than driving (e.g. shaking).
+    private(set) var lastInnovation: Double = 0
 
     // Covariance
     private var p11 = 25.0
@@ -112,9 +116,25 @@ final class KalmanSpeedEstimator {
         return FusedSample(t: t, v: v, d: distance, a: lastAccel)
     }
 
+    /// Force the estimate back onto a GPS measurement, discarding accumulated
+    /// integration error (used when the IMU has clearly been driven by
+    /// something other than vehicle motion).
+    func snap(to speed: Double, at t: TimeInterval) {
+        v = max(0, speed)
+        bias = 0
+        lastTime = t
+        lastAccel = 0
+        p11 = 4.0
+        p12 = 0
+        p22 = 0.25
+        history.removeAll()
+        history.append((t, v))
+    }
+
     func reset() {
         v = 0; bias = 0; distance = 0
         lastTime = nil; lastAccel = 0
+        lastInnovation = 0
         isInitialized = false
         p11 = 25.0; p12 = 0; p22 = 0.25
         history.removeAll()
@@ -206,6 +226,7 @@ final class KalmanSpeedEstimator {
         // Latency compensation: innovate against the estimate at fix time.
         let vRef = speedInHistory(at: fix.t) ?? v
         let innovation = fix.speed - vRef
+        lastInnovation = innovation
 
         v = max(0, v + k1 * innovation)
         // Shift the history by the same correction so later stale fixes

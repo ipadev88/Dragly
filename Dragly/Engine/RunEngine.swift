@@ -36,6 +36,16 @@ final class RunEngine {
     /// Reject fixes with horizontal accuracy worse than this, m.
     var maxHorizontalAccuracy = 20.0
 
+    /// Hard physical ceiling on longitudinal acceleration, m/s².
+    /// Even a slick-shod drag car stays under ~1.6 g; anything above this is
+    /// not the car moving (hand shake, phone drop, road impact), so it is
+    /// clamped instead of being integrated into speed.
+    private static let maxCarAccel = 1.6 * 9.80665
+    /// Abort a run when the estimate exceeds GPS speed by this much, m/s.
+    private static let maxSpeedDivergence = 6.0
+    /// Abort a run after this long without a usable GPS speed, s.
+    private static let maxUncorroboratedRun = 3.0
+
     /// Called on the same thread the engine is fed from when a run completes.
     var onRunFinished: ((RunResult) -> Void)?
 
@@ -83,8 +93,15 @@ final class RunEngine {
 
     // Launch detection.
     @ObservationIgnored private var launchStreakStart: TimeInterval?
-    /// Recent accel magnitudes for replaying the launch ramp (last ~0.6 s).
-    @ObservationIgnored private var recentAccel: [(t: TimeInterval, mag: Double)] = []
+    /// Unit vector of the first tick in the current launch streak — later
+    /// ticks must keep pushing the same way, which shaking never does.
+    @ObservationIgnored private var launchStreakDir: (x: Double, y: Double, z: Double)?
+    /// Recent accel vectors for replaying the launch ramp (last ~0.8 s).
+    @ObservationIgnored private var recentAccel: [AccelTick] = []
+
+    // GPS corroboration of the current run.
+    @ObservationIgnored private var runPeakGPSSpeed: Double = 0
+    @ObservationIgnored private var lastValidSpeedFixT: TimeInterval?
 
     // Run session.
     @ObservationIgnored private var runActive = false
@@ -149,6 +166,9 @@ final class RunEngine {
         lastGoodFix = nil
         gpsTrend = 0
         launchStreakStart = nil
+        launchStreakDir = nil
+        recentAccel.removeAll()
+        lastValidSpeedFixT = nil
         clearRun()
         trace.removeAll()
         speedMS = 0
@@ -166,6 +186,7 @@ final class RunEngine {
         peakA = 0
         decliningSince = nil
         runAccuracies = []
+        runPeakGPSSpeed = 0
         pendingSpeedMarks = []
         crossedSpeed = []
         pendingDistanceMarks = []
@@ -195,7 +216,8 @@ final class RunEngine {
         // (fix-to-fix interpolation) and let the filter switch to 100 Hz
         // fusion the moment direction is known.
         guard dirValid else { return }
-        let aLong = accel.hx * dirX + accel.hy * dirY + accel.hz * dirZ
+        let raw = accel.hx * dirX + accel.hy * dirY + accel.hz * dirZ
+        let aLong = min(Self.maxCarAccel, max(-Self.maxCarAccel, raw))
         if let s = estimator.predict(to: accel.t, aLong: aLong) {
             process(sample: s)
         }
@@ -235,8 +257,10 @@ final class RunEngine {
         if fix.latitude.isFinite, fix.longitude.isFinite {
             lastCoordinate = (fix.latitude, fix.longitude)
         }
+        lastValidSpeedFixT = fix.t
         if runActive {
             runAccuracies.append(fix.horizontalAccuracy)
+            runPeakGPSSpeed = max(runPeakGPSSpeed, fix.speed)
             if fix.altitude.isFinite, fix.verticalAccuracy > 0, fix.verticalAccuracy < 15 {
                 altSamples.append((estimator.distance - launchDistanceBase, fix.altitude))
             }
@@ -244,10 +268,24 @@ final class RunEngine {
 
         // Advance to fix time with current accel, then correct.
         let aLong: Double? = (dirValid && accelSeen)
-            ? lastAccelTick.map { $0.hx * dirX + $0.hy * dirY + $0.hz * dirZ }
+            ? lastAccelTick.map {
+                let raw = $0.hx * dirX + $0.hy * dirY + $0.hz * dirZ
+                return min(Self.maxCarAccel, max(-Self.maxCarAccel, raw))
+            }
             : nil
         estimator.predict(to: fix.t, aLong: aLong)
         if let s = estimator.update(fix: fix, hasAccel: dirValid && accelSeen) {
+            // The estimate has run far above what GPS measures: the
+            // accelerometer was integrating something that isn't driving.
+            // Throw the run away and re-anchor on GPS.
+            if estimator.lastInnovation < -Self.maxSpeedDivergence {
+                abortRun()
+                estimator.snap(to: fix.speed, at: fix.t)
+                dirValid = false
+                prev = nil
+                trace.removeAll()
+                return
+            }
             // GPS-only launch fallback (no accelerometer, e.g. simulator):
             // back-extrapolate the first moving fixes to v = 0.
             if !accelSeen, !runActive, state == .ready,
@@ -295,30 +333,52 @@ final class RunEngine {
             launchStreakStart = nil
             return
         }
-        recentAccel.append((accel.t, accel.magnitude))
-        if recentAccel.count > 80 { recentAccel.removeFirst(recentAccel.count - 80) }
+        recentAccel.append(accel)
+        if recentAccel.count > 100 { recentAccel.removeFirst(recentAccel.count - 100) }
 
-        if accel.magnitude > 1.2 {
+        let mag = accel.magnitude
+        // A launch pushes the phone one way and keeps pushing. Shaking
+        // reverses direction every few ticks, so require the whole streak to
+        // stay within a cone around its first tick.
+        if let dir = launchStreakDir, mag > 0.01 {
+            let cosine = (accel.hx * dir.x + accel.hy * dir.y + accel.hz * dir.z) / mag
+            if cosine < 0.5 {
+                launchStreakStart = nil
+                launchStreakDir = nil
+            }
+        }
+
+        if mag > 1.2 {
+            if launchStreakDir == nil {
+                launchStreakDir = (accel.hx / mag, accel.hy / mag, accel.hz / mag)
+            }
             if let start = launchStreakStart {
-                if accel.t - start >= 0.12 {
+                // 0.3 s of consistent push: long enough that hand movement
+                // rarely survives, and free of accuracy cost because the run
+                // is timestamped back to the start of the streak.
+                if accel.t - start >= 0.3 {
                     // Launch confirmed; direction = launch acceleration vector.
                     let mag = accel.magnitude
                     dirX = accel.hx / mag; dirY = accel.hy / mag; dirZ = accel.hz / mag
                     dirValid = true
                     beginRun(standing: true, launchTime: start, fromSpeed: 0)
-                    // Replay the ramp between streak start and now: the filter
-                    // sat at v = 0 while direction was unknown, which would
-                    // otherwise delay the rollout line by ~0.2–0.3 s.
-                    var vSeed = 0.0, dSeed = 0.0
-                    var tPrev = start
+                    // Replay the confirmation window through the normal
+                    // pipeline. The filter sat at v = 0 while the travel
+                    // direction was unknown; replaying it here means the
+                    // rollout line, 60 ft and the first speed marks are
+                    // interpolated at their true times instead of being
+                    // stamped at the moment the launch was confirmed.
+                    estimator.seedAfterLaunch(v: 0, distance: 0, at: start)
+                    prev = nil
                     for tick in recentAccel where tick.t > start {
-                        let dt = tick.t - tPrev
-                        vSeed += tick.mag * dt
-                        dSeed += vSeed * dt
-                        tPrev = tick.t
+                        let raw = tick.hx * dirX + tick.hy * dirY + tick.hz * dirZ
+                        let a = min(Self.maxCarAccel, max(-Self.maxCarAccel, raw))
+                        if let s = estimator.predict(to: tick.t, aLong: a) {
+                            process(sample: s)
+                        }
                     }
-                    estimator.seedAfterLaunch(v: vSeed, distance: dSeed, at: accel.t)
                     launchStreakStart = nil
+                    launchStreakDir = nil
                     recentAccel.removeAll()
                 }
             } else {
@@ -326,6 +386,7 @@ final class RunEngine {
             }
         } else {
             launchStreakStart = nil
+            launchStreakDir = nil
         }
     }
 
@@ -340,6 +401,7 @@ final class RunEngine {
         peakV = estimator.v
         peakA = 0
         decliningSince = nil
+        runPeakGPSSpeed = lastGoodFix?.speed ?? 0
 
         pendingSpeedMarks = cachedMarks.filter { $0 > fromSpeed + 0.001 }
         crossedSpeed = []
@@ -366,6 +428,12 @@ final class RunEngine {
             if state == .running { state = hasGoodFix ? .ready : .waitingForGPS }
         }
         guard runActive, !aborted else { return }
+
+        // GPS is the independent witness. If Doppler speed never corroborated
+        // the fused estimate, the run was driven by the accelerometer alone
+        // (shaking, a knock, a dropped phone) and must not be saved.
+        if peakV > 5, runPeakGPSSpeed < max(2.0, 0.5 * peakV) { return }
+
         // A run that cannot resolve a single interval is noise — drop it.
         // Rolling runs need ≥ 2 speed crossings; standing runs have t0, so
         // one crossing (or any distance mark) is enough.
@@ -411,6 +479,13 @@ final class RunEngine {
         )
         lastResult = result
         onRunFinished?(result)
+    }
+
+    /// Discard the current run without saving it.
+    private func abortRun() {
+        guard runActive else { return }
+        clearRun()
+        state = hasGoodFix ? .ready : .waitingForGPS
     }
 
     /// User-initiated stop while running.
@@ -518,6 +593,12 @@ final class RunEngine {
             }
         } else {
             decliningSince = nil
+        }
+        // No usable GPS speed for a while: nothing can vouch for the estimate.
+        if runActive, let fixT = lastValidSpeedFixT,
+           s.t - fixT > Self.maxUncorroboratedRun {
+            abortRun()
+            return
         }
         if runActive, s.t - runStart > 300 { finishRun() }
         if runActive, standingStart, s.v < 0.3, s.t - runStart > 5 { finishRun() }
