@@ -22,7 +22,6 @@ struct MeasureView: View {
             statusBar
             Spacer(minLength: 0)
             speedometer
-            gMeter
             Spacer(minLength: 0)
             stateBanner
             liveList
@@ -50,11 +49,9 @@ struct MeasureView: View {
 
     private var statusBar: some View {
         HStack(spacing: 8) {
-            GPSStatusChip(quality: quality, isSearching: isSearching)
-            if app.motion.isRunning {
-                chip(icon: "gyroscope", text: Text("IMU"), color: accent)
-            }
+            gReadout
             Spacer()
+            GPSStatusChip(quality: quality, isSearching: isSearching)
             #if DEBUG
             Menu {
                 Button {
@@ -114,32 +111,24 @@ struct MeasureView: View {
         }
     }
 
-    private var gMeter: some View {
+    /// Longitudinal g as a plain number: accent while pulling, red under
+    /// braking, muted when the IMU has nothing to say.
+    private var gReadout: some View {
         let g = app.engine.accelG
-        return VStack(spacing: 5) {
-            GeometryReader { geo in
-                let w = geo.size.width
-                let clamped = min(1.5, max(-1.5, g))
-                let x = w * (clamped + 1.5) / 3.0
-                ZStack(alignment: .leading) {
-                    Capsule().fill(Theme.panel).frame(height: 6)
-                    Rectangle()
-                        .fill(Theme.textTertiary)
-                        .frame(width: 1, height: 12)
-                        .offset(x: w / 2)
-                    Circle()
-                        .fill(g >= -0.05 ? accent : Theme.danger)
-                        .frame(width: 12, height: 12)
-                        .offset(x: x - 6)
-                }
-                .frame(height: 12)
-            }
-            .frame(height: 12)
-            Text(verbatim: String(format: "%+.2f g", g))
-                .font(.figure(12, weight: .semibold))
+        let color: Color = {
+            guard app.motion.isRunning, abs(g) > 0.02 else { return Theme.textTertiary }
+            return g > 0 ? accent : Theme.danger
+        }()
+        return HStack(alignment: .firstTextBaseline, spacing: 3) {
+            Text(verbatim: String(format: "%+.2f", g))
+                .font(.figureAccent(22))
+                .contentTransition(.numericText())
+            Text(verbatim: "g")
+                .font(.label(13, weight: .bold))
                 .foregroundStyle(Theme.textSecondary)
         }
-        .padding(.horizontal, 32)
+        .foregroundStyle(color)
+        .animation(.easeOut(duration: 0.15), value: g)
     }
 
     // MARK: State

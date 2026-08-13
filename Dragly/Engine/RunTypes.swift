@@ -134,6 +134,16 @@ nonisolated struct CurvePoint: Codable, Hashable {
     var d: Double
 }
 
+/// One recorded position along a run, for the route map.
+nonisolated struct RoutePoint: Codable, Hashable {
+    /// Seconds since run start.
+    var t: TimeInterval
+    var lat: Double
+    var lon: Double
+    /// Fused speed at this point, m/s.
+    var v: Double
+}
+
 // MARK: - Run result
 
 /// Ambient conditions captured around a run. Every field is optional —
@@ -176,6 +186,9 @@ nonisolated struct RunResult: Codable, Hashable {
     var usedMotion: Bool
     /// Ambient conditions (filled by the app layer after the run).
     var conditions: RunConditions? = nil
+    /// GPS track of the run (≈1 Hz). Optional so runs saved before route
+    /// recording existed still decode.
+    var route: [RoutePoint]? = nil
 
     // MARK: Segment resolution
 

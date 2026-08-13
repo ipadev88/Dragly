@@ -546,6 +546,16 @@
         }
       }
     },
+    "Route": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Маршрут"
+          }
+        }
+      }
+    },
     "Run": {
       "localizations": {
         "ru": {

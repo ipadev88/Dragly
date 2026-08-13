@@ -89,6 +89,8 @@ final class RunEngine {
     @ObservationIgnored private(set) var lastCoordinate: (lat: Double, lon: Double)?
     /// Altitude samples during the run: (distance travelled, altitude m).
     @ObservationIgnored private var altSamples: [(d: Double, alt: Double)] = []
+    /// GPS track of the current run.
+    @ObservationIgnored private var routePoints: [RoutePoint] = []
     @ObservationIgnored private var gpsTrend: Double = 0 // m/s² from consecutive fixes
     @ObservationIgnored private var lastAccelTick: AccelTick?
     @ObservationIgnored private var accelSeen = false
@@ -194,6 +196,7 @@ final class RunEngine {
         pendingDistanceMarks = []
         crossedDistance = []
         altSamples = []
+        routePoints = []
         liveSpeedCrossings = []
         liveDistanceCrossings = []
         liveStandingStart = false
@@ -266,6 +269,12 @@ final class RunEngine {
             runPeakGPSSpeed = max(runPeakGPSSpeed, fix.speed)
             if fix.altitude.isFinite, fix.verticalAccuracy > 0, fix.verticalAccuracy < 15 {
                 altSamples.append((estimator.distance - launchDistanceBase, fix.altitude))
+            }
+            if fix.latitude.isFinite, fix.longitude.isFinite {
+                routePoints.append(RoutePoint(t: fix.t - runStart,
+                                              lat: fix.latitude,
+                                              lon: fix.longitude,
+                                              v: estimator.v))
             }
         }
 
@@ -478,7 +487,8 @@ final class RunEngine {
             peakSpeedMS: peakV,
             gpsAccuracy: medianAcc,
             usedMotion: accelSeen,
-            conditions: conditions
+            conditions: conditions,
+            route: routePoints.count >= 3 ? routePoints : nil
         )
         lastResult = result
         onRunFinished?(result)

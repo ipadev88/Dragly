@@ -16,6 +16,7 @@ struct HistoryView: View {
 
     @State private var pendingDelete: RunRecord?
     @State private var confirmDeleteAll = false
+    @State private var openedRecord: RunRecord?
 
     private var unit: SpeedUnit { SpeedUnit(rawValue: unitRaw) ?? .kmh }
     private var accent: Color { appearance.accent.color }
@@ -49,12 +50,15 @@ struct HistoryView: View {
             } message: { record in
                 Text("\(record.headline(unit: unit) ?? "—") · \(record.date.formatted(date: .abbreviated, time: .shortened)). This can't be undone.")
             }
+            .navigationDestination(item: $openedRecord) { record in
+                RunDetailView(record: record, unit: unit)
+            }
             .task {
                 #if DEBUG
-                // Screenshot hook: the simulator can't be touch-driven here.
-                if ProcessInfo.processInfo.arguments.contains("--alert-demo") {
-                    pendingDelete = records.first
-                }
+                // Screenshot hooks: the simulator can't be touch-driven here.
+                let args = ProcessInfo.processInfo.arguments
+                if args.contains("--alert-demo") { pendingDelete = records.first }
+                if args.contains("--open-last") { openedRecord = records.first }
                 #endif
             }
             .alert(Text("Delete all runs?"), isPresented: $confirmDeleteAll) {

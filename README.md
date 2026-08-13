@@ -39,6 +39,7 @@ A Draggy-style performance meter that runs on one iPhone — no external GNSS re
 | **Custom intervals** | Any range, e.g. 130–170 — timed on every run |
 | **Chart** | Speed curve; press and drag to read time, speed, distance and g at any point |
 | **Run conditions** | Temperature, altitude, density altitude, track slope |
+| **Route map** | The GPS track drawn on Apple Maps under every saved run |
 | **Background** | Keeps measuring with the screen off or while you're in another app |
 | **History** | Every run stored on device with its chart and full table |
 | **Units** | km/h and mph, meters and feet, °C and °F |

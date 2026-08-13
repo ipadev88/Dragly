@@ -30,21 +30,38 @@ struct RunResultView: View {
     }
 
     var body: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: 16) {
-                header
-                conditionsRow
-                chart
-                speedTable
-                if !result.distanceSegments.isEmpty {
-                    distanceTable
+        ScrollViewReader { proxy in
+            ScrollView {
+                VStack(alignment: .leading, spacing: 16) {
+                    header
+                    conditionsRow
+                    chart
+                    speedTable
+                    if !result.distanceSegments.isEmpty {
+                        distanceTable
+                    }
+                    statsRow
+                    if let route = result.route, route.count >= 3 {
+                        RouteMapView(route: route, unit: unit, accent: accent)
+                    }
+                    Color.clear.frame(height: 1).id(bottomAnchor)
                 }
-                statsRow
+                .padding(16)
             }
-            .padding(16)
+            .background(Theme.background.ignoresSafeArea())
+            .task {
+                #if DEBUG
+                // Screenshot hook: the simulator can't be scrolled headlessly.
+                if ProcessInfo.processInfo.arguments.contains("--scroll-bottom") {
+                    try? await Task.sleep(for: .seconds(1))
+                    proxy.scrollTo(bottomAnchor, anchor: .bottom)
+                }
+                #endif
+            }
         }
-        .background(Theme.background.ignoresSafeArea())
     }
+
+    private var bottomAnchor: String { "bottom" }
 
     private var extraPairs: [(Double, Double, SpeedUnit)] {
         AppSettings.customIntervals.map { ($0.fromMS, $0.toMS, $0.unit) }
