@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="Design/dragly-logo.svg" width="128" alt="Dragly">
+<img src="Design/dragly-logo.png" width="128" alt="Dragly">
 
 # Dragly
 
@@ -22,6 +22,15 @@
 [![Release](https://img.shields.io/github/v/release/ipadev88/Dragly?style=flat-square&color=9EF542)](https://github.com/ipadev88/Dragly/releases/latest)
 [![Downloads](https://img.shields.io/github/downloads/ipadev88/Dragly/total?style=flat-square&color=9EF542)](https://github.com/ipadev88/Dragly/releases)
 [![Zero dependencies](https://img.shields.io/badge/зависимости-нет-9EF542?style=flat-square)](#-стек)
+
+</div>
+
+<div align="center">
+
+<img src="Design/screenshots/01-measure.png" width="200" alt="Замер">&nbsp;
+<img src="Design/screenshots/02-result.png" width="200" alt="Результат">&nbsp;
+<img src="Design/screenshots/03-scrub.png" width="200" alt="Скраббер графика">&nbsp;
+<img src="Design/screenshots/04-history.png" width="200" alt="История">
 
 </div>
 
