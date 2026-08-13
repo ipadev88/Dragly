@@ -8,6 +8,7 @@ import SwiftData
 
 struct ContentView: View {
     @Environment(AppModel.self) private var app
+    @Environment(AppearanceModel.self) private var appearance
     @Environment(\.modelContext) private var context
     @State private var selectedTab = 0
 
@@ -23,7 +24,7 @@ struct ContentView: View {
                 SettingsView()
             }
         }
-        .tint(Theme.accent)
+        .tint(appearance.accent.color)
         .task {
             app.modelContext = context
             #if DEBUG
@@ -47,6 +48,7 @@ struct ContentView: View {
 #Preview {
     ContentView()
         .environment(AppModel())
+        .environment(AppearanceModel())
         .modelContainer(for: RunRecord.self, inMemory: true)
         .preferredColorScheme(.dark)
 }

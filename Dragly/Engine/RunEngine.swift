@@ -55,6 +55,8 @@ final class RunEngine {
     private(set) var speedMS: Double = 0
     private(set) var accelG: Double = 0
     private(set) var gpsHorizontalAccuracy: Double?
+    /// 1-sigma Doppler speed accuracy of the last fix, m/s (nil = unusable).
+    private(set) var gpsSpeedAccuracy: Double?
     private(set) var motionActive = false
     /// Run-start unix time while running (for live elapsed display).
     private(set) var runStartDate: Date?
@@ -230,6 +232,7 @@ final class RunEngine {
 
         var fix = rawFix
         gpsHorizontalAccuracy = fix.horizontalAccuracy >= 0 ? fix.horizontalAccuracy : nil
+        gpsSpeedAccuracy = fix.speedAccuracy >= 0 ? fix.speedAccuracy : nil
 
         // Stationary iPhones often report an invalid Doppler speed (-1).
         // If the position fix itself is good and we are plausibly at rest,

@@ -9,8 +9,11 @@ import SwiftUI
 import Charts
 
 struct RunResultView: View {
+    @Environment(AppearanceModel.self) private var appearance
     let result: RunResult
     let unit: SpeedUnit
+
+    private var accent: Color { appearance.accent.color }
 
     @State private var scrubT: Double?
 
@@ -52,7 +55,7 @@ struct RunResultView: View {
     private var header: some View {
         HStack(spacing: 8) {
             badge(result.standingStart ? Text("Standing start") : Text("Rolling start"),
-                  color: Theme.accent)
+                  color: accent)
             if !result.usedMotion {
                 badge(Text("GPS-only"), color: Theme.warning)
             }
@@ -61,14 +64,14 @@ struct RunResultView: View {
             }
             Spacer()
             Text(result.date, format: .dateTime.day().month().hour().minute())
-                .font(.system(size: 13, weight: .medium, design: .rounded))
+                .font(.label(13, weight: .medium))
                 .foregroundStyle(Theme.textSecondary)
         }
     }
 
     private func badge(_ text: Text, color: Color) -> some View {
         text
-            .font(.system(size: 12, weight: .bold, design: .rounded))
+            .font(.label(12, weight: .bold))
             .foregroundStyle(color)
             .padding(.horizontal, 8)
             .padding(.vertical, 4)
@@ -103,7 +106,7 @@ struct RunResultView: View {
         HStack(spacing: 4) {
             Image(systemName: icon).font(.system(size: 10, weight: .bold))
             Text(verbatim: text)
-                .font(.system(size: 12, weight: .semibold, design: .rounded).monospacedDigit())
+                .font(.figure(12, weight: .semibold))
         }
         .foregroundStyle(Theme.textSecondary)
         .padding(.horizontal, 8)
@@ -143,7 +146,7 @@ struct RunResultView: View {
                         LineMark(
                             x: .value("Time", p.t),
                             y: .value("Speed", unit.convert(p.v)))
-                        .foregroundStyle(Theme.accent)
+                        .foregroundStyle(accent)
                         .lineStyle(StrokeStyle(lineWidth: 2.5, lineCap: .round))
                         .interpolationMethod(.monotone)
                     }
@@ -170,7 +173,7 @@ struct RunResultView: View {
                         AxisGridLine().foregroundStyle(Theme.panelStroke)
                         AxisValueLabel()
                             .foregroundStyle(Theme.textTertiary)
-                            .font(.system(size: 11, design: .rounded))
+                            .font(.label(11, weight: .regular))
                     }
                 }
                 .chartYAxis {
@@ -178,7 +181,7 @@ struct RunResultView: View {
                         AxisGridLine().foregroundStyle(Theme.panelStroke)
                         AxisValueLabel()
                             .foregroundStyle(Theme.textTertiary)
-                            .font(.system(size: 11, design: .rounded))
+                            .font(.label(11, weight: .regular))
                     }
                 }
                 .frame(height: 190)
@@ -192,11 +195,11 @@ struct RunResultView: View {
     private func scrubCard(_ p: CurvePoint) -> some View {
         VStack(alignment: .leading, spacing: 2) {
             Text(verbatim: String(format: "%.2f s", p.t))
-                .font(.system(size: 12, weight: .bold, design: .rounded).monospacedDigit())
+                .font(.figure(12, weight: .bold))
                 .foregroundStyle(Theme.textSecondary)
             Text(verbatim: "\(Int(unit.convert(p.v).rounded())) \(unit.symbolText)")
-                .font(.system(size: 15, weight: .black, design: .rounded).monospacedDigit())
-                .foregroundStyle(Theme.accent)
+                .font(.figureAccent(14))
+                .foregroundStyle(accent)
             HStack(spacing: 6) {
                 if p.d > 0.5 {
                     Text(verbatim: unit == .kmh
@@ -207,7 +210,7 @@ struct RunResultView: View {
                     Text(verbatim: String(format: "%+.2f g", g))
                 }
             }
-            .font(.system(size: 11, weight: .semibold, design: .rounded).monospacedDigit())
+            .font(.figure(11, weight: .semibold))
             .foregroundStyle(Theme.textSecondary)
         }
         .padding(.horizontal, 10)
@@ -230,12 +233,12 @@ struct RunResultView: View {
                     ForEach(Array(segs.enumerated()), id: \.element.id) { i, seg in
                         HStack {
                             Text(verbatim: seg.title)
-                                .font(.system(size: 15, weight: .semibold, design: .rounded))
+                                .font(.label(15, weight: .semibold))
                                 .foregroundStyle(Theme.textPrimary)
                             Spacer()
                             Text(verbatim: formatTime(seg.time) + " s")
-                                .font(.system(size: 16, weight: .bold, design: .rounded).monospacedDigit())
-                                .foregroundStyle(Theme.accent)
+                                .font(.figureAccent(15))
+                                .foregroundStyle(accent)
                         }
                         .padding(.horizontal, 14)
                         .padding(.vertical, 9)
@@ -257,15 +260,15 @@ struct RunResultView: View {
             ForEach(Array(segs.enumerated()), id: \.element.id) { i, seg in
                 HStack {
                     Text(verbatim: seg.title)
-                        .font(.system(size: 15, weight: .semibold, design: .rounded))
+                        .font(.label(15, weight: .semibold))
                         .foregroundStyle(Theme.textPrimary)
                     Spacer()
                     Text(verbatim: "@ \(Int(unit.convert(seg.trapSpeedMS).rounded())) \(unit.symbolText)")
-                        .font(.system(size: 13, weight: .semibold, design: .rounded).monospacedDigit())
+                        .font(.figure(13, weight: .semibold))
                         .foregroundStyle(Theme.textSecondary)
                     Text(verbatim: formatTime(seg.time) + " s")
-                        .font(.system(size: 16, weight: .bold, design: .rounded).monospacedDigit())
-                        .foregroundStyle(Theme.accent)
+                        .font(.figureAccent(15))
+                        .foregroundStyle(accent)
                         .frame(minWidth: 74, alignment: .trailing)
                 }
                 .padding(.horizontal, 14)
@@ -281,7 +284,7 @@ struct RunResultView: View {
 
     private func sectionTitle(_ text: Text) -> some View {
         text
-            .font(.system(size: 12, weight: .bold, design: .rounded))
+            .font(.caption(12))
             .foregroundStyle(Theme.textTertiary)
             .textCase(.uppercase)
             .padding(.horizontal, 14)
@@ -305,10 +308,10 @@ struct RunResultView: View {
     private func stat(title: Text, value: String) -> some View {
         VStack(spacing: 3) {
             title
-                .font(.system(size: 11, weight: .semibold, design: .rounded))
+                .font(.label(11, weight: .semibold))
                 .foregroundStyle(Theme.textTertiary)
             Text(verbatim: value)
-                .font(.system(size: 16, weight: .bold, design: .rounded).monospacedDigit())
+                .font(.figure(16, weight: .bold))
                 .foregroundStyle(Theme.textPrimary)
         }
         .frame(maxWidth: .infinity)

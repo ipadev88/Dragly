@@ -1,6 +1,16 @@
 {
   "sourceLanguage": "en",
   "strings": {
+    "%@ · %@. This can't be undone.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@ · %2$@. Это действие нельзя отменить."
+          }
+        }
+      }
+    },
     "1-foot rollout": {
       "localizations": {
         "ru": {
@@ -23,12 +33,32 @@
     },
     "100": {},
     "200": {},
+    "Accent": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Акцент"
+          }
+        }
+      }
+    },
     "Add interval": {
       "localizations": {
         "ru": {
           "stringUnit": {
             "state": "translated",
             "value": "Добавить интервал"
+          }
+        }
+      }
+    },
+    "All %lld saved runs will be removed. This can't be undone.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Будут удалены все сохранённые заезды (%lld). Это действие нельзя отменить."
           }
         }
       }
@@ -40,6 +70,36 @@
           "stringUnit": {
             "state": "translated",
             "value": "Высота"
+          }
+        }
+      }
+    },
+    "Amber": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Янтарный"
+          }
+        }
+      }
+    },
+    "Appearance": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Оформление"
+          }
+        }
+      }
+    },
+    "Blue": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Синий"
           }
         }
       }
@@ -71,6 +131,66 @@
           "stringUnit": {
             "state": "translated",
             "value": "Свои интервалы"
+          }
+        }
+      }
+    },
+    "Cyan": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Бирюзовый"
+          }
+        }
+      }
+    },
+    "Dark": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Тёмная"
+          }
+        }
+      }
+    },
+    "Delete": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Удалить"
+          }
+        }
+      }
+    },
+    "Delete all": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Удалить все"
+          }
+        }
+      }
+    },
+    "Delete all runs?": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Удалить все заезды?"
+          }
+        }
+      }
+    },
+    "Delete this run?": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Удалить заезд?"
           }
         }
       }
@@ -116,6 +236,26 @@
         }
       }
     },
+    "Excellent": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Отличный"
+          }
+        }
+      }
+    },
+    "Fair": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Средний"
+          }
+        }
+      }
+    },
     "From": {
       "localizations": {
         "ru": {
@@ -156,6 +296,16 @@
         }
       }
     },
+    "Good": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Хороший"
+          }
+        }
+      }
+    },
     "History": {
       "localizations": {
         "ru": {
@@ -176,12 +326,42 @@
         }
       }
     },
+    "Light": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Светлая"
+          }
+        }
+      }
+    },
+    "Lime": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Лаймовый"
+          }
+        }
+      }
+    },
     "Location access denied. Enable it in Settings.": {
       "localizations": {
         "ru": {
           "stringUnit": {
             "state": "translated",
             "value": "Нет доступа к геолокации. Разреши её в настройках iPhone."
+          }
+        }
+      }
+    },
+    "Magenta": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Розовый"
           }
         }
       }
@@ -246,6 +426,26 @@
         }
       }
     },
+    "No signal": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Нет сигнала"
+          }
+        }
+      }
+    },
+    "Orange": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Оранжевый"
+          }
+        }
+      }
+    },
     "Peak g": {
       "localizations": {
         "ru": {
@@ -272,6 +472,56 @@
           "stringUnit": {
             "state": "translated",
             "value": "Готово — разгоняйся, отсчёт начнётся сам"
+          }
+        }
+      }
+    },
+    "Red": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Красный"
+          }
+        }
+      }
+    },
+    "Reset": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Сбросить"
+          }
+        }
+      }
+    },
+    "Reset settings": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Сбросить настройки"
+          }
+        }
+      }
+    },
+    "Reset settings?": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Сбросить настройки?"
+          }
+        }
+      }
+    },
+    "Restores units, appearance and measurement options. Saved runs are kept.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Вернёт единицы, оформление и параметры замера к значениям по умолчанию. Сохранённые заезды останутся."
           }
         }
       }
@@ -332,6 +582,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Сохранить"
+          }
+        }
+      }
+    },
+    "Searching…": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Поиск…"
           }
         }
       }
@@ -409,6 +669,16 @@
         }
       }
     },
+    "System": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Системная"
+          }
+        }
+      }
+    },
     "Temperature": {
       "extractionState": "stale",
       "localizations": {
@@ -416,6 +686,26 @@
           "stringUnit": {
             "state": "translated",
             "value": "Температура"
+          }
+        }
+      }
+    },
+    "Theme": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Тема"
+          }
+        }
+      }
+    },
+    "This can't be undone.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Это действие нельзя отменить."
           }
         }
       }
@@ -451,12 +741,42 @@
         }
       }
     },
+    "Units, appearance, rollout and custom intervals go back to their defaults. Saved runs are kept.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Единицы, оформление, роллаут и свои интервалы вернутся к значениям по умолчанию. Сохранённые заезды останутся."
+          }
+        }
+      }
+    },
+    "Violet": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Фиолетовый"
+          }
+        }
+      }
+    },
     "Waiting for GPS…": {
       "localizations": {
         "ru": {
           "stringUnit": {
             "state": "translated",
             "value": "Ожидание GPS…"
+          }
+        }
+      }
+    },
+    "Weak": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Слабый"
           }
         }
       }

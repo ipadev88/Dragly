@@ -10,9 +10,11 @@ import SwiftData
 
 struct MeasureView: View {
     @Environment(AppModel.self) private var app
+    @Environment(AppearanceModel.self) private var appearance
     @AppStorage(AppSettings.unitKey) private var unitRaw = SpeedUnit.kmh.rawValue
 
     private var unit: SpeedUnit { SpeedUnit(rawValue: unitRaw) ?? .kmh }
+    private var accent: Color { appearance.accent.color }
 
     var body: some View {
         @Bindable var app = app
@@ -40,17 +42,17 @@ struct MeasureView: View {
                         }
                     }
             }
-            .preferredColorScheme(.dark)
+            .preferredColorScheme(appearance.scheme.colorScheme)
         }
     }
 
-    // MARK: Pieces
+    // MARK: Status bar
 
     private var statusBar: some View {
         HStack(spacing: 8) {
-            gpsChip
+            GPSStatusChip(quality: quality, isSearching: isSearching)
             if app.motion.isRunning {
-                chip(icon: "gyroscope", text: Text("IMU"), color: Theme.accent)
+                chip(icon: "gyroscope", text: Text("IMU"), color: accent)
             }
             Spacer()
             #if DEBUG
@@ -73,24 +75,20 @@ struct MeasureView: View {
         }
     }
 
-    private var gpsChip: some View {
-        let (color, label): (Color, Text) = {
-            guard app.isArmed else { return (Theme.textTertiary, Text("GPS")) }
-            guard let acc = app.engine.gpsHorizontalAccuracy else {
-                return (Theme.danger, Text("No GPS"))
-            }
-            let text = Text(verbatim: "±\(Int(acc.rounded())) m")
-            if acc <= 8 { return (Theme.accent, text) }
-            if acc <= 20 { return (Theme.warning, text) }
-            return (Theme.danger, text)
-        }()
-        return chip(icon: "location.fill", text: label, color: color)
+    private var quality: SignalQuality {
+        .from(horizontalAccuracy: app.engine.gpsHorizontalAccuracy,
+              speedAccuracy: app.engine.gpsSpeedAccuracy)
+    }
+
+    /// Armed but no fix yet — the chip shows a spinner instead of empty bars.
+    private var isSearching: Bool {
+        app.isArmed && app.engine.gpsHorizontalAccuracy == nil
     }
 
     private func chip(icon: String, text: Text, color: Color) -> some View {
         HStack(spacing: 5) {
             Image(systemName: icon).font(.system(size: 11, weight: .bold))
-            text.font(.system(size: 13, weight: .semibold, design: .rounded).monospacedDigit())
+            text.font(.label(13))
         }
         .foregroundStyle(color)
         .padding(.horizontal, 10)
@@ -98,24 +96,27 @@ struct MeasureView: View {
         .background(color.opacity(0.12), in: Capsule())
     }
 
+    // MARK: Readout
+
     private var speedometer: some View {
-        VStack(spacing: 0) {
+        VStack(spacing: 2) {
             Text(verbatim: "\(Int(unit.convert(app.engine.speedMS).rounded()))")
-                .font(.system(size: 132, weight: .black, design: .rounded))
+                .font(.readout(112))
                 .monospacedDigit()
                 .foregroundStyle(Theme.textPrimary)
                 .contentTransition(.numericText())
                 .lineLimit(1)
-                .minimumScaleFactor(0.5)
+                .minimumScaleFactor(0.6)
             Text(unit.symbol)
-                .font(.system(size: 20, weight: .bold, design: .rounded))
+                .font(.label(18, weight: .bold))
+                .tracking(1.5)
                 .foregroundStyle(Theme.textSecondary)
         }
     }
 
     private var gMeter: some View {
         let g = app.engine.accelG
-        return VStack(spacing: 4) {
+        return VStack(spacing: 5) {
             GeometryReader { geo in
                 let w = geo.size.width
                 let clamped = min(1.5, max(-1.5, g))
@@ -127,7 +128,7 @@ struct MeasureView: View {
                         .frame(width: 1, height: 12)
                         .offset(x: w / 2)
                     Circle()
-                        .fill(g >= -0.05 ? Theme.accent : Theme.danger)
+                        .fill(g >= -0.05 ? accent : Theme.danger)
                         .frame(width: 12, height: 12)
                         .offset(x: x - 6)
                 }
@@ -135,11 +136,13 @@ struct MeasureView: View {
             }
             .frame(height: 12)
             Text(verbatim: String(format: "%+.2f g", g))
-                .font(.system(size: 12, weight: .semibold, design: .rounded).monospacedDigit())
+                .font(.figure(12, weight: .semibold))
                 .foregroundStyle(Theme.textSecondary)
         }
         .padding(.horizontal, 32)
     }
+
+    // MARK: State
 
     private var stateBanner: some View {
         Group {
@@ -153,7 +156,7 @@ struct MeasureView: View {
             case .waitingForGPS:
                 banner(Text("Waiting for GPS…"), color: Theme.warning)
             case .ready:
-                banner(Text("Ready — accelerate, the clock starts itself"), color: Theme.accent)
+                banner(Text("Ready — accelerate, the clock starts itself"), color: accent)
             case .running:
                 runningBanner
             }
@@ -164,12 +167,12 @@ struct MeasureView: View {
         HStack(spacing: 8) {
             Circle().fill(Theme.danger).frame(width: 9, height: 9)
             Text(app.engine.liveStandingStart ? "Standing start" : "Rolling start")
-                .font(.system(size: 15, weight: .bold, design: .rounded))
+                .font(.label(15, weight: .bold))
             Spacer()
             if let start = app.engine.runStartDate {
                 TimelineView(.periodic(from: .now, by: 0.05)) { ctx in
-                    Text(verbatim: formatTime(max(0, ctx.date.timeIntervalSince(start))))
-                        .font(.system(size: 22, weight: .black, design: .rounded).monospacedDigit())
+                    Text(verbatim: formatTime(max(0, ctx.date.timeIntervalSince(start))) + " s")
+                        .font(.figureAccent(22))
                         .foregroundStyle(Theme.textPrimary)
                 }
             }
@@ -182,7 +185,7 @@ struct MeasureView: View {
 
     private func banner(_ text: Text, color: Color) -> some View {
         text
-            .font(.system(size: 15, weight: .semibold, design: .rounded))
+            .font(.label(15))
             .foregroundStyle(color)
             .frame(maxWidth: .infinity)
             .padding(.vertical, 10)
@@ -192,16 +195,21 @@ struct MeasureView: View {
     /// Last few crossings while running.
     private var liveList: some View {
         VStack(spacing: 6) {
-            let crossings = app.engine.liveSpeedCrossings.suffix(4).reversed()
+            // Backfilled marks carry negative times (crossed before the run's
+            // zero); they belong in the result table, not in the live ticker.
+            let crossings = app.engine.liveSpeedCrossings
+                .filter { $0.t >= 0 }
+                .suffix(4)
+                .reversed()
             ForEach(Array(crossings), id: \.self) { c in
                 HStack {
                     Text(verbatim: "\(Int(unit.convert(c.ms).rounded())) \(unit.symbolText)")
-                        .font(.system(size: 15, weight: .semibold, design: .rounded).monospacedDigit())
+                        .font(.figure(16, weight: .semibold))
                         .foregroundStyle(Theme.textPrimary)
                     Spacer()
                     Text(verbatim: formatTime(c.t) + " s")
-                        .font(.system(size: 15, weight: .bold, design: .rounded).monospacedDigit())
-                        .foregroundStyle(Theme.accent)
+                        .font(.figureAccent(16))
+                        .foregroundStyle(accent)
                 }
                 .padding(.horizontal, 16)
                 .padding(.vertical, 7)
@@ -221,14 +229,14 @@ struct MeasureView: View {
             }
         } label: {
             Text(app.isArmed ? "STOP" : "START")
-                .font(.system(size: 22, weight: .black, design: .rounded))
-                .tracking(2)
+                .font(.system(size: 23, weight: .black, design: .rounded))
+                .tracking(3)
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 18)
                 .background(
-                    app.isArmed ? Theme.danger : Theme.accent,
+                    app.isArmed ? Theme.danger : accent,
                     in: RoundedRectangle(cornerRadius: 18, style: .continuous))
-                .foregroundStyle(.black)
+                .foregroundStyle(app.isArmed ? Color.white : appearance.accent.onAccent)
         }
         .buttonStyle(.plain)
         .sensoryFeedback(.impact(weight: .medium), trigger: app.isArmed)
