@@ -37,7 +37,10 @@ struct SettingsView: View {
                 } header: {
                     Text("Measurement")
                 } footer: {
-                    Text("Drag-strip style: the clock starts after the first foot of movement.")
+                    VStack(alignment: .leading, spacing: 6) {
+                        Text("Drag-strip style: the clock starts after the first foot of movement.")
+                        Text("Measuring continues with the screen off or in another app — a blue indicator shows while it runs.")
+                    }
                 }
                 .listRowBackground(Theme.panel)
 

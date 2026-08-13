@@ -39,6 +39,7 @@ A Draggy-style performance meter that runs on one iPhone — no external GNSS re
 | **Custom intervals** | Any range, e.g. 130–170 — timed on every run |
 | **Chart** | Speed curve; press and drag to read time, speed, distance and g at any point |
 | **Run conditions** | Temperature, altitude, density altitude, track slope |
+| **Background** | Keeps measuring with the screen off or while you're in another app |
 | **History** | Every run stored on device with its chart and full table |
 | **Units** | km/h and mph, meters and feet, °C and °F |
 
@@ -59,6 +60,14 @@ IMU (100 Hz, accel) ─┘      [v, bias]
 * **Standing launches** are caught on the acceleration edge (the IMU reacts an order of magnitude sooner than GPS), replaying the confirmation window so the first 0.2 s aren't lost.
 * **Slope and DA.** Track slope comes from the barometer (≈0.1 m vertically versus meters from GPS); density altitude is derived from pressure and temperature.
 * **Works without the IMU too.** If the accelerometer is unavailable the engine falls back to GPS-only — accuracy drops, but the run is still timed.
+
+### Not everything that moves is a run
+
+The accelerometer alone can be fooled — shake the phone hard enough and naive integration invents a launch. Three independent guards stop that:
+
+1. Longitudinal acceleration is clamped at **1.6 g**. Even a slick-shod drag car stays below that, so anything higher isn't the car and never reaches the speed estimate.
+2. A standing launch requires **0.3 s of push in one direction** — every tick must stay inside a cone around the first. Shaking reverses sign every few ticks and never confirms. Timing doesn't suffer: the run is stamped back to the start of the push.
+3. **GPS has to corroborate the run.** If Doppler speed never rises to at least half the fused estimate, the run isn't saved. Mid-run, a divergence above 6 m/s or 3 s without a usable GPS speed aborts it and re-anchors the filter on GPS.
 
 ### Verified accuracy
 
@@ -130,6 +139,8 @@ The core (`Engine/`) imports neither CoreLocation nor CoreMotion nor SwiftUI —
 |---|---|
 | Location (when in use) | Doppler speed is the basis of every measurement |
 | Motion & fitness | Accelerometer and barometer for accuracy between GPS fixes |
+
+Background location is enabled only while a measurement session is armed, so iOS shows its blue location indicator exactly when Dragly is actually measuring — and never otherwise. "Always" authorization is not requested. Continuous navigation-grade GPS plus a 100 Hz IMU do drain the battery, so press **STOP** when you're done.
 
 Nothing is uploaded; your data stays on the device. The only network request is air temperature for the run's coordinates via [Open-Meteo](https://open-meteo.com) (no keys, no account). Offline the app works fully — it just won't show temperature.
 

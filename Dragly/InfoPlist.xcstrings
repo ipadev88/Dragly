@@ -1,52 +1,52 @@
 {
-  "sourceLanguage" : "en",
-  "strings" : {
-    "CFBundleName" : {
-      "comment" : "Bundle name",
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Dragly"
+  "sourceLanguage": "en",
+  "strings": {
+    "CFBundleName": {
+      "comment": "Bundle name",
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Dragly"
           }
         }
       }
     },
-    "NSLocationWhenInUseUsageDescription" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Dragly uses precise GPS to time your acceleration runs."
+    "NSLocationWhenInUseUsageDescription": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dragly uses precise GPS to time your acceleration runs, including while the screen is off."
           }
         },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Dragly использует точный GPS для замера времени разгона."
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dragly использует точный GPS для замера времени разгона, в том числе при выключенном экране."
           }
         }
       }
     },
-    "NSMotionUsageDescription" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "The accelerometer sharpens timing between GPS updates."
+    "NSMotionUsageDescription": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The accelerometer sharpens timing between GPS updates."
           }
         },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Акселерометр повышает точность замера между обновлениями GPS."
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Акселерометр повышает точность замера между обновлениями GPS."
           }
         }
       }
     }
   },
-  "version" : "1.0"
+  "version": "1.0"
 }

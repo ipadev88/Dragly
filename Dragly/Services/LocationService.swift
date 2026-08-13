@@ -41,6 +41,7 @@ final class LocationService: NSObject, CLLocationManagerDelegate {
     func start() {
         requestPermission()
         guard !isUpdating else { return }
+        setBackgroundUpdates(true)
         manager.startUpdatingLocation()
         isUpdating = true
     }
@@ -48,7 +49,25 @@ final class LocationService: NSObject, CLLocationManagerDelegate {
     func stop() {
         guard isUpdating else { return }
         manager.stopUpdatingLocation()
+        setBackgroundUpdates(false)
         isUpdating = false
+    }
+
+    /// Keep fixes coming while the screen is off or the user switches apps.
+    /// Enabled only for the duration of a measurement session, so the blue
+    /// location indicator appears exactly while Dragly is actually measuring.
+    ///
+    /// Setting this without the `location` background mode in Info.plist
+    /// raises an exception, hence the capability check.
+    private func setBackgroundUpdates(_ enabled: Bool) {
+        #if os(iOS)
+        let modes = Bundle.main.object(forInfoDictionaryKey: "UIBackgroundModes") as? [String]
+        guard modes?.contains("location") == true else { return }
+        guard authorizationStatus == .authorizedWhenInUse
+                || authorizationStatus == .authorizedAlways else { return }
+        manager.allowsBackgroundLocationUpdates = enabled
+        manager.showsBackgroundLocationIndicator = enabled
+        #endif
     }
 
     // MARK: CLLocationManagerDelegate (main run loop — manager created on main)
@@ -57,6 +76,9 @@ final class LocationService: NSObject, CLLocationManagerDelegate {
         authorizationStatus = manager.authorizationStatus
         if isUpdating,
            authorizationStatus == .authorizedWhenInUse || authorizationStatus == .authorizedAlways {
+            // Permission granted after start(): background updates could not
+            // be enabled back then, so enable them now.
+            setBackgroundUpdates(true)
             manager.startUpdatingLocation()
         }
     }

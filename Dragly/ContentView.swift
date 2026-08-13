@@ -31,6 +31,9 @@ struct ContentView: View {
             let args = ProcessInfo.processInfo.arguments
             if args.contains("--tab-history") { selectedTab = 1 }
             if args.contains("--tab-settings") { selectedTab = 2 }
+            // Arms the real sensor pipeline, as if START had been tapped —
+            // lets background behaviour be tested with simulated GPS routes.
+            if args.contains("--arm") { app.arm() }
             if args.contains("--sim-standing") {
                 app.simulateRun(rolling: false)
             } else if args.contains("--sim-rolling") {
