@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#111319"/>
+      <stop offset="1" stop-color="#07080B"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1024" height="1024" rx="228" fill="url(#bg)"/>
+
+  <!-- Speedometer arc -->
+  <path d="M 193.2 526.6 A 330 330 0 0 1 830.8 526.6"
+        fill="none" stroke="#9EF542" stroke-width="46" stroke-linecap="round"/>
+
+  <!-- Needle -->
+  <line x1="512" y1="612" x2="743.8" y2="549.9"
+        stroke="#FFFFFF" stroke-width="26" stroke-linecap="round"/>
+  <circle cx="512" cy="612" r="34" fill="#FFFFFF"/>
+  <circle cx="512" cy="612" r="15" fill="#07080B"/>
+
+  <!-- GPS signal -->
+  <circle cx="216" cy="322" r="11" fill="#9EF542"/>
+  <path d="M 249.5 327.9 A 34 34 0 0 0 210.1 288.5"
+        fill="none" stroke="#9EF542" stroke-opacity="0.9"
+        stroke-width="12" stroke-linecap="round"/>
+  <path d="M 275.1 332.4 A 60 60 0 0 0 205.6 262.9"
+        fill="none" stroke="#9EF542" stroke-opacity="0.45"
+        stroke-width="12" stroke-linecap="round"/>
+</svg>

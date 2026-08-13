@@ -2,23 +2,48 @@
 //  ContentView.swift
 //  Dragly
 //
-//  Created by ipadev on 13.08.2026.
-//
 
 import SwiftUI
+import SwiftData
 
 struct ContentView: View {
+    @Environment(AppModel.self) private var app
+    @Environment(\.modelContext) private var context
+    @State private var selectedTab = 0
+
     var body: some View {
-        VStack {
-            Image(systemName: "globe")
-                .imageScale(.large)
-                .foregroundStyle(.tint)
-            Text("Hello, world!")
+        TabView(selection: $selectedTab) {
+            Tab("Measure", systemImage: "gauge.open.with.lines.needle.67percent.and.arrowtriangle", value: 0) {
+                MeasureView()
+            }
+            Tab("History", systemImage: "list.bullet.rectangle", value: 1) {
+                HistoryView()
+            }
+            Tab("Settings", systemImage: "gearshape", value: 2) {
+                SettingsView()
+            }
         }
-        .padding()
+        .tint(Theme.accent)
+        .task {
+            app.modelContext = context
+            #if DEBUG
+            // Headless UI testing hooks.
+            let args = ProcessInfo.processInfo.arguments
+            if args.contains("--tab-history") { selectedTab = 1 }
+            if args.contains("--tab-settings") { selectedTab = 2 }
+            if args.contains("--sim-standing") {
+                app.simulateRun(rolling: false)
+            } else if args.contains("--sim-rolling") {
+                app.simulateRun(rolling: true)
+            }
+            #endif
+        }
     }
 }
 
 #Preview {
     ContentView()
+        .environment(AppModel())
+        .modelContainer(for: RunRecord.self, inMemory: true)
+        .preferredColorScheme(.dark)
 }
